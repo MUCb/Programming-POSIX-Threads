@@ -1,5 +1,5 @@
 #include <pthread.h>
-//#include "errors.h"
+#include "errors.h"
 
 typedef struct my_struct_tag {
     pthread_mutex_t	mutex;

@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
 					break;
 				}
 				last = &next->link;
-				next = next = next->link;
+				next = next->link;
 			}
 			/*
 			 * If we reached the end of the list, insert the new
