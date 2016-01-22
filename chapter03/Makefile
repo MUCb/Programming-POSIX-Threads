@@ -1,4 +1,4 @@
-all: alarm_mutex backoff trylock mutex_static mutex_dynamic cond_static cond_dynamic
+all: alarm_mutex backoff trylock mutex_static mutex_dynamic cond_static cond_dynamic cond
 
 alarm_mutex: alarm_mutex.c errors.h
 	gcc -Wall -pedantic -std=c99 alarm_mutex.c -lpthread -o alarm_mutex.out
@@ -20,3 +20,6 @@ cond_static: cond_static.c errors.h
 
 cond_dynamic: cond_dynamic.c errors.h
 	gcc -Wall -pedantic -std=c99 cond_dynamic.c -lpthread -o cond_dynamic.out
+
+cond: cond.c errors.h
+	gcc -Wall -pedantic -std=c99 cond.c -lpthread -o cond.out
