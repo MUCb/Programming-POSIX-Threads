@@ -58,7 +58,7 @@ void *alarm_thread (void *arg)
 			else
 				sleep_time = alarm->time - now;
 #ifndef DEBUG
-			printf("[waiting: %d(%d)\"%s\"]\n", alarm->time,
+			printf("[waiting: %ld(%d)\"%s\"]\n", alarm->time,
 				sleep_time, alarm->message);
 #endif
 		}

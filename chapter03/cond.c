@@ -70,7 +70,8 @@ int main (int argc, char *argv[])
 
 	while (data.value == 0)
 	{
-		status = pthread_cond_timedwait (&data.cond, &data.mutex, &timeout);
+		status = pthread_cond_timedwait (
+			&data.cond, &data.mutex, &timeout);
 		if (status == ETIMEDOUT)
 		{
 			printf("Condition wait time out.\n");;
