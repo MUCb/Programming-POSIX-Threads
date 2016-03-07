@@ -131,7 +131,7 @@ void *alarm_thread (void *arg)
 			if (!expired)
 				alarm_insert (alarm);
 		} else
-		expired = 1;
+			expired = 1;
 		if (expired) {
 			printf ("(%d) %s\n", alarm->seconds, alarm->message);
 			free (alarm);
