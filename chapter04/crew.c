@@ -295,7 +295,7 @@ int crew_create (crew_t *crew, int crew_size)
     /*
      * We won't create more than CREW_SIZE members.
      */
-     if (crew_size > CREW_SIZE)
+    if (crew_size > CREW_SIZE)
         return EINVAL;
 
     crew->crew_size = crew_size;
@@ -306,8 +306,8 @@ int crew_create (crew_t *crew, int crew_size)
     /*
      * Initialize synchronization objects.
      */
-     status = pthread_mutex_init (&crew->mutex, NULL);
-     if (status != 0)
+    status = pthread_mutex_init (&crew->mutex, NULL);
+    if (status != 0)
         return status;
     status = pthread_cond_init (&crew->done, NULL);
     if (status != 0)
@@ -337,10 +337,14 @@ int crew_start ( crew_p crew, char *filepath, char *search) {
     work_p request;
     int status;
 
+    status = pthread_mutex_lock (&crew->mutex);
+    if (status != 0)
+        return status;
+
     /*
      * If the crew is busy, wait for them to finish.
      */
-     while (crew->work_count > 0){
+    while (crew->work_count > 0){
         status = pthread_cond_wait (&crew->done, &crew->mutex);
         if (status != 0) {
             pthread_mutex_unlock (&crew->mutex);
