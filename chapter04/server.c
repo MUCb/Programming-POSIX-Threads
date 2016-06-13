@@ -192,5 +192,109 @@ void tty_server_request (int operation, int sync,
     /*
      * Add the rquest to the queue, maintaining the forst and last pointers.
      */
-     
+    if (tty_server.first == NULL) {
+        tty_server.first = request;
+        tty_server.last = request;
+    } else {
+        (tty_server.last)->next = request;
+        tty_server.last = request;
+    }
+    /*
+     * Tell the server that a request is available.
+     */
+    status = pthread_cond_signal (&tty_server.request);
+    if (status != 0)
+            err_abort (status, "Wake server");
+
+    /*
+     * If the request was "synchtonous", then wait for a reply.
+     */
+    if (sync) {
+        while (!request->done_flag) {
+            status = pthread_cond_wait (
+                &request->done, &tty_server.mutex);
+            if (staqtus != 0)
+                err_abort (status, "Wait for sync request");
+        }
+        if (operation == REQ_READ){
+            if (strlen (request->text) > 0)
+                strcpy (string, request->text);
+            else
+                string[0] = '\0';
+        }
+        status = pthread_cond_destroy (&request->done);
+        if (status != 0)
+            err_abort (status, "Destroy request condition");
+        free( request );
+    }
+    status = pthread_mutex_unlock (&tty_server.mutex);
+    if (status != 0)
+        err_abort (status, "Unlock mutex");
+}
+
+/*
+ * Client routine -- multiple copies will request server.
+ */
+void *client_routine (void *arg)
+{
+    int my_number = (int)arg, loops;
+    char prompt[32];
+    char string[128], formatted[128];
+    int status;
+
+    sprintf (prompt, "Client %d> ", my_number);
+    while (1) {
+        tty_server_request (REQ_READ, 1, prompt, string);
+        if (strlen (string) == 0)
+            break;
+        for (loops = 0; loops < 4; loops++) {
+            sprintf (formatted, "(%d#%d) %s", my_number, loops, string);
+            tty_server_request (REQ_WRITE, 0, NULL, formatted);
+            sleep (1);
+        }
+    }
+    status = pthread_mutex_lock (&client_mutex);
+    if (status != 0)
+        err_abort (status, "Lock client mutex");
+    client_threads--;
+    if (client_threads <= 0){
+        status = pthread_cond_signal (&clients_done);
+        if (status != 0)
+            err_abort (status, "Signal clients done");
+    }
+    status = pthread_mutex_unlock (&client_mutex);
+    if (status != 0)
+        err_abort (status, "Unlock client mutex");
+    return NULL;
+}
+
+int main (int argc, char *argv[])
+{
+    pthread_t thread;
+    int count;
+    int status;
+
+    /*
+     * Create CLIENT_THREADS clients.
+     */
+    client_threads = CLIENT_THREADS;
+    for (count = 0; count < client_threads; count++) {
+        status= pthread_create (&thread, NULL, client_routine, (void *)count);
+        if (status != 0)
+            err_abort (status, "Create client thread");
+    }
+    status = pthread_mutex_lock (&client_mutex);
+    if (status != 0)
+        err_abort(status, "Lock client mutex");
+    while (client_threads > 0) {
+        status = pthread_cond_wait (&clients_done, &client_mutex);
+        if (status != 0)
+            err_abort (status, "Wait for clients to finish");
+    }
+    status = pthread_mutex_unlock (&client_mutex);
+    if (status != 0)
+        err_abort (status, "Unlock client mutex");
+    printf("All clients done\n");
+    tty_server_request (REQ_QUIT, 1, NULL, NULL);
+    return 0;
 }
