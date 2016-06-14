@@ -17,7 +17,7 @@ typedef struct request_tag {
     int                 synchronous;/* Nonzero if synchronous */
     int                 done_flag;  /* Predicate for wait */
     pthread_cond_t      done;       /* Wait for completion */
-    char                prompt[32]; /* Prompt string fir reads */
+    char                prompt[32]; /* Prompt string for reads */
     char                text[128];  /* Read/write text */
 } request_t;
 
@@ -55,7 +55,7 @@ pthread_cond_t clients_done = PTHREAD_COND_INITIALIZER;
  */
 void *tty_server_routine (void *arg)
 {
-    static pthread_mutex_t prompt_mutex = PTHREAD_MUTEX_INITIALIZER;
+    // static pthread_mutex_t prompt_mutex = PTHREAD_MUTEX_INITIALIZER;
     request_t *request;
     int operation, len;
     int status;
@@ -74,7 +74,7 @@ void *tty_server_routine (void *arg)
                 err_abort (status, "Wait for request");
         }
         request = tty_server.first;
-        tty_server.first = request->nexr;
+        tty_server.first = request->next;
         if (tty_server.first == NULL)
             tty_server.last = NULL;
         status = pthread_mutex_unlock (&tty_server.mutex);
@@ -97,7 +97,7 @@ void *tty_server_routine (void *arg)
                  * Because fgets returns the newline, and we don't 
                  * want it, we look for it, and turn it into a null
                  * (truncating the input) if found. It should be the
-                 * last character, if ot is here.
+                 * last character, if it is here.
                  */
                 len = strlen (request->text);
                 if (len > 0 && request->text[len-1] == '\n')
@@ -125,13 +125,14 @@ void *tty_server_routine (void *arg)
         if(operation == REQ_QUIT)
             break;
     }
+    return NULL;
 }
 
 /*
  * Request an operation
  */
 void tty_server_request (int operation, int sync, 
-                                            const char *prompt, char *string);
+                                            const char *prompt, char *string)
 {
     request_t *request;
     int status;
@@ -145,8 +146,8 @@ void tty_server_request (int operation, int sync,
 
         status = pthread_attr_init (&detached_attr);
         if (status != 0)
-            eer_abort (status, "Init attributes object");
-        status = pthread_attr_setdetachedstate (&detached_attr, 
+            err_abort (status, "Init attributes object");
+        status = pthread_attr_setdetachstate (&detached_attr, 
                                                     PTHREAD_CREATE_DETACHED);
         if (status != 0)
             err_abort (status, "Set detached state");
@@ -154,7 +155,7 @@ void tty_server_request (int operation, int sync,
         status = pthread_create (&thread, &detached_attr, 
                                                     tty_server_routine, NULL);
         if (status != 0)
-            err_abort (status. "Create server");
+            err_abort (status, "Create server");
 
         /*
          * Ignore an error in destroing the attributes object.
@@ -181,10 +182,10 @@ void tty_server_request (int operation, int sync,
             err_abort (status, "Init request condition");
     }
     if (prompt != NULL)
-        strncpy (request->prmpt, prompt, 32);
+        strncpy (request->prompt, prompt, 32);
     else
         request->prompt[0] = '\0';
-    if (opretion == REQ_WRITE && string != NULL)
+    if (operation == REQ_WRITE && string != NULL)
         strncpy (request->text, string, 128);
     else
         request->text[0] = '\0';
@@ -213,7 +214,7 @@ void tty_server_request (int operation, int sync,
         while (!request->done_flag) {
             status = pthread_cond_wait (
                 &request->done, &tty_server.mutex);
-            if (staqtus != 0)
+            if (status != 0)
                 err_abort (status, "Wait for sync request");
         }
         if (operation == REQ_READ){
