@@ -11,7 +11,7 @@ int main (int argc, char *argv[])
     status = pthread_mutexattr_init( &mutex_attr);
     if (status != 0)
         err_abort (status, "Create attr");
-#ifndef _POSIX_THREAD_PROCESS_SHARED
+#ifdef _POSIX_THREAD_PROCESS_SHARED
     printf("shared \n");
     status = pthread_mutexattr_setpshared (&mutex_attr, 
                                                     PTHREAD_PROCESS_PRIVATE);

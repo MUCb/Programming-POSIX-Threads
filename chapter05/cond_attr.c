@@ -11,8 +11,9 @@ int main (int argc, char *argv[])
     status = pthread_condattr_init (&cond_attr);
     if (status != 0)
         err_abort (status, "Create attr");
-#ifndef _POSIX_THREAD_PROCESS_SHARED
-    status = pthread_condattr_setpshared (&cond_attr, PTHREAD_PTOCESS_PRIVATE);
+#ifdef _POSIX_THREAD_PROCESS_SHARED
+    printf("define \n");
+    status = pthread_condattr_setpshared (&cond_attr, PTHREAD_PROCESS_PRIVATE);
     if (status != 0)
         err_abort (status, "Set pshared");
 #endif
