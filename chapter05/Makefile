@@ -1,4 +1,4 @@
-all: mutex_attr cond_attr thread_attr cancel cancel_disable
+all: mutex_attr cond_attr thread_attr cancel cancel_disable cancel_async
 
 mutex_attr: mutex_attr.c errors.h
 	gcc -Wall -pedantic -std=c99 mutex_attr.c  -lpthread -o mutex_attr.out
@@ -14,3 +14,6 @@ cancel: cancel.c errors.h
 
 cancel_disable: cancel_disable.c errors.h
 	gcc -Wall -pedantic -std=c99 cancel_disable.c  -lpthread -DDEBUG -o cancel_disable.out
+
+cancel_async: cancel_async.c errors.h
+	gcc -Wall -pedantic -std=c99 cancel_async.c  -lpthread -DDEBUG -o cancel_async.out
