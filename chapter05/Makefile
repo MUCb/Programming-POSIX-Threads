@@ -1,5 +1,5 @@
 all: mutex_attr cond_attr thread_attr cancel cancel_disable \
-	cancel_async cancel_cleanup cancel_subcontract
+	cancel_async cancel_cleanup cancel_subcontract tsd_once
 
 mutex_attr: mutex_attr.c errors.h
 	gcc -Wall -pedantic -std=c99 mutex_attr.c  -lpthread -o mutex_attr.out
@@ -27,3 +27,6 @@ cancel_cleanup: cancel_cleanup.c errors.h
 cancel_subcontract: cancel_subcontract.c errors.h
 	gcc -Wall -pedantic -std=c99 cancel_subcontract.c \
                                         -lpthread -o cancel_subcontract.out
+
+tsd_once: tsd_once.c errors.h
+	gcc -Wall -pedantic -std=c99 tsd_once.c -lpthread -o tsd_once.out
