@@ -78,7 +78,7 @@ void *thread_routine (void *arg)
     return NULL;
 }
 
-void main (int argc, char *argv[])
+int main (int argc, char *argv[])
 {
     pthread_t thread_1, thread_2;
     private_t *value;
@@ -102,10 +102,10 @@ void main (int argc, char *argv[])
     value = (private_t*)identity_key_get ();
     value->thread_id = pthread_self();
     value->string = "Main thread";
-    status = pthread_create (&thread_1, NULL, thread_routine, "Thread 1")
+    status = pthread_create (&thread_1, NULL, thread_routine, "Thread 1");
     if (status != 0)
         err_abort (status, "Create thread 1");
-    status = pthread_create (&thread_2, NULL, thread_routine, "Thread 2")
+    status = pthread_create (&thread_2, NULL, thread_routine, "Thread 2");
     if (status != 0)
         err_abort (status, "Create thread 2");
     pthread_exit (NULL);
