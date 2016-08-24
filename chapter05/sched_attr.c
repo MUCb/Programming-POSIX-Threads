@@ -19,7 +19,7 @@ void *thread_routine (void *arg)
      * that the thread ran, and exit.
      */
 #if defined (_POSIX_THREAD_PRIORITY_SCHEDULING) && !defined (sun)
-    status = pthread_getschedparam (pthread_self), &my_policy, &my_param);
+    status = pthread_getschedparam (pthread_self(), &my_policy, &my_param);
     if (status != 0)
         err_abort (status, "Get sched");
     printf ("thread_routine running at %s/%d\n", 
@@ -54,4 +54,63 @@ int main (int argc, char *argv[])
      * set will be ignored! The default behavior is to inherit
      * scheduling information ffrom the creating thread.
      */
+#if defined (_POSIX_THREAD_PRIORITY_SCHEDULING) && !defined (sun)
+     status = pthread_attr_getschedpolicy (&thread_attr, &thread_policy);
+     if (status != 0)
+        err_abort (status, "Get policy");
+    status = pthread_attr_getschedparam (&thread_attr, &thread_param);
+    if (status != 0)
+        err_abort (status, "Get sched param");
+    printf("Default policy is %s, priority is %d\n", 
+        (thread_policy == SCHED_FIFO ? "FIFO" : 
+        (thread_policy == SCHED_RR ? "RR" : 
+        (thread_policy == SCHED_OTHER ? "OTHER" : 
+        "unknown"))), 
+        thread_param.sched_priority);
+
+    status = pthread_attr_setschedpolicy (&thread_attr, SCHED_RR);
+    if (status != 0)
+        printf ("Unabke to set SCHED_RR policy.\n");
+    else {
+        /*
+         * Just for the sake of the exercise, we'll use the
+         * middle of the prority range allowed for
+         * SCHED_RR. This should ensure that the thread will be
+         * run, without blocking everything else. Because any
+         * assumption about how a thread's priority interacts
+         * with other threads (even in other processes) are 
+         * nonportable, especially on an implementation that 
+         * defaults to System contention scope, you may have to 
+         * adjust this code before it will work on some systems.
+         */
+        rr_min_priority = sched_get_priority_min (SCHED_RR);
+        if (rr_min_priority == -1 )
+            errno_abort ("Get SCHED_RR min priority");
+        rr_max_priority = sched_get_priority_max (SCHED_RR);
+        if (rr_max_priority == -1)
+            errno_abort ("Het SCHED_RR max priority");
+        thread_param.sched_priority = (rr_min_priority + rr_max_priority) / 2;
+        printf("SCHED_RR priority range is %d to %d: using %d\n", 
+            rr_min_priority,
+            rr_max_priority,
+            thread_param.sched_priority);
+        status = pthread_attr_setschedparam (&thread_attr, &thread_param);
+        if (status != 0)
+            err_abort (status, "Set params");
+        printf("Creating thread at RR/%d\n", thread_param.sched_priority);
+        status = pthread_attr_setinheritsched (&thread_attr, PTHREAD_EXPLICIT_SCHED);
+        if (status != 0)
+            err_abort (status, "Set inherit");
+    }
+#else 
+    printf("Priority scheduling not supported\n");
+#endif
+    status = pthread_create (&thread_id, &thread_attr, thread_routine, NULL);
+    if (status != 0 )
+        err_abort (status, "Create thread");
+    status = pthread_join (thread_id, NULL);
+    if (status != 0)
+        err_abort (status, "Join thread");
+    printf("Main exiting");
+    return 0;
 }
