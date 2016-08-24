@@ -52,7 +52,7 @@ int main (int argc, char *argv[])
      * that you remember to set the inheritsched attribute to 
      * PTHREAD_EXPLICIT_SCHED, or the policy and priority that you've
      * set will be ignored! The default behavior is to inherit
-     * scheduling information ffrom the creating thread.
+     * scheduling information from the creating thread.
      */
 #if defined (_POSIX_THREAD_PRIORITY_SCHEDULING) && !defined (sun)
      status = pthread_attr_getschedpolicy (&thread_attr, &thread_policy);
