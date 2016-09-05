@@ -111,6 +111,6 @@ int main (int argc, char *argv[])
     status = pthread_join (thread_id, NULL);
     if (status != 0)
         err_abort (status, "Join thread");
-    printf("Main exiting");
+    printf("Main exiting\n");
     return 0;
 }
