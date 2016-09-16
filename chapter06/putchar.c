@@ -9,7 +9,6 @@
 void *lock_routine (void *arg)
 {
     char *pointer;
-
     flockfile (stdout);
     for (pointer = arg; *pointer != '\0'; pointer++) {
         putchar_unlocked (*pointer);
