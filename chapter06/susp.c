@@ -4,7 +4,7 @@
 #include "errors.h"
 
 #define THREAD_COUNT    20
-#define ITERATIONS      40000
+#define ITERATIONS      4000000
 
 unsigned long thread_count = THREAD_COUNT;
 unsigned long itertions = ITERATIONS;
@@ -73,7 +73,7 @@ void suspend_init_routine(void)
 
      sigemptyset (&sigusr1.sa_mask);
      sigusr2.sa_flags = 0;
-     sigusr2.sa_handler = suspend_signal_handler;
+     sigusr2.sa_handler = resume_signal_handler;
      sigusr2.sa_mask = sigusr1.sa_mask;
 
      status = sigaction (SIGUSR1, &sigusr1, NULL);
@@ -122,7 +122,6 @@ int thd_suspend (pthread_t target_thread)
      * is ignored. Sending e second SIGUSR1 would cause the 
      * thread to reuspend itself as soon as it is resumed.
      */
-    printf("%s %d\n", __func__, __LINE__);
     while (i < bottom)
         if (array[i++] == target_thread) {
             status = pthread_mutex_unlock (&mut);
@@ -134,7 +133,6 @@ int thd_suspend (pthread_t target_thread)
      * the location in the array that we'll use. If we run off
      * the end, realloc the array for the more space.
      */
-    printf("%s %d\n", __func__, __LINE__);
     i = 0;
     while (array[i] != 0)
         i++;
@@ -149,20 +147,16 @@ int thd_suspend (pthread_t target_thread)
         array[bottom] = null_thread; /* Clear new entry */
     }
 
-    printf("%s %d\n", __func__, __LINE__);
     /*
      * Clear the sentinel and signal the thread to suspend.
      */
     sentinel = 0;
     status = pthread_kill (target_thread, SIGUSR1);
-    printf("%s %d\n", __func__, __LINE__);
     if (status != 0){
-        printf("%s %d\n", __func__, __LINE__);
         pthread_mutex_unlock(&mut);
         return status;
     }
 
-    printf("%s %d\n", __func__, __LINE__);
     /*
      * Wait for sentinel to chnange.
      */
@@ -286,11 +280,12 @@ int main (int argc, char * argv[])
         printf("Continuing thread %lu.\n", i);
         status = thd_continue (threads[i]);
         if (status != 0)
-            err_abort(status, "Suspend thread");
+            err_abort(status, "Continue thread");
     }
 
     for (i = THREAD_COUNT/2; i < THREAD_COUNT; i++){
         printf("Suspending the thread %lu.\n",i );
+        status = thd_suspend (threads[i]);
         if (status != 0)
             err_abort (status, "Suspend thread");
     }
@@ -302,7 +297,7 @@ int main (int argc, char * argv[])
         printf("Continuing thread %lu.\n", i);
         status = thd_continue (threads[i]);
         if (status != 0)
-            err_abort(status, "Suspend thread");
+            err_abort(status, "Continue thread");
     }
     pthread_exit (NULL); /* Let threads finish */
 }
