@@ -1,4 +1,4 @@
-all: atfork flock putchar getlogin susp
+all: atfork flock putchar getlogin susp sigwait sigev_thread
 
 atfork: atfork.c errors.h
 	gcc -Wall -pedantic -std=c99 atfork.c  -lpthread -o atfork.out
@@ -14,3 +14,9 @@ getlogin: getlogin.c errors.h
 
 susp: susp.c errors.h
 	gcc -Wall -pedantic  -lpthread  -std=c99 -D_POSIX_C_SOURCE=199506L susp.c -o susp.out 
+
+sigwait: sigwait.c errors.h
+	gcc -Wall -pedantic  -lpthread  -std=c99 -D_POSIX_C_SOURCE=199506L sigwait.c -o sigwait.out 
+
+sigev_thread: sigev_thread.c errors.h
+	gcc -Wall -pedantic  -lpthread -lrt -std=c99 -DDEBUG -D_POSIX_C_SOURCE=199506L sigev_thread.c -o sigev_thread.out 

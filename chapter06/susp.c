@@ -101,7 +101,6 @@ int thd_suspend (pthread_t target_thread)
     int status;
     int i = 0;
 
-    printf("%s %d\n", __func__, __LINE__);
     /*
      * The first call to thd_suspend will initialize the package.
      */
