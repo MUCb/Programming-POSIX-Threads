@@ -1,4 +1,4 @@
-all: atfork flock putchar getlogin susp sigwait sigev_thread
+all: atfork flock putchar getlogin susp sigwait sigev_thread semaphore_signal
 
 atfork: atfork.c errors.h
 	gcc -Wall -pedantic -std=c99 atfork.c  -lpthread -o atfork.out
@@ -20,3 +20,7 @@ sigwait: sigwait.c errors.h
 
 sigev_thread: sigev_thread.c errors.h
 	gcc -Wall -pedantic  -lpthread -lrt -std=c99 -DDEBUG -D_POSIX_C_SOURCE=199506L sigev_thread.c -o sigev_thread.out 
+
+
+semaphore_signal: semaphore_signal.c errors.h
+	gcc -Wall -pedantic  -lpthread -lrt -std=c99 -DDEBUG -D_POSIX_C_SOURCE=199506L semaphore_signal.c -o semaphore_signal.out 
